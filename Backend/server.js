@@ -8,7 +8,7 @@ app.use(express.json());
 app.use(cors());
 
 // هذا الرابط مبدئي، سنغيره لاحقاً عند إنشاء قاعدة البيانات
-const MONGO_URI = "mongodb://localhost:27017/authentiq_db"; 
+const MONGO_URI = "mongodb+srv://lynshobakie_db_user:mJsY1qXfPIOlMA8K@cluster0.ybgjkan.mongodb.net/?appName=Cluster0"; 
 
 mongoose.connect(MONGO_URI)
     .then(() => console.log("Connected to MongoDB successfully! ✅"))
