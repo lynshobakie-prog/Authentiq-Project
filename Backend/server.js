@@ -13,22 +13,33 @@ app.post('/add-certificate', async (req, res) => {
     try {
         const newCert = new Certificate(req.body);
         await newCert.save();
-        res.status(201).send("Done! Certificate saved to Cloud. ✅");
-    } catch (error) {
-        res.status(400).send("Error: " + error.message);
-    }
+        res.status(201).send("تمت الإضافة بنجاح");
+    } catch (e) { res.status(400).send(e.message); }
 });
 
 // وظيفة لجلب وعرض جميع الشهادات المخزنة في السحاب
-app.get('/all-certificates', async (req, res) => {
+app.get('/verify-certificate', async (req, res) => {
     try {
-        const allCerts = await Certificate.find(); // أمر المونجو للبحث عن كل المستندات
-        res.status(200).json(allCerts); // إرسال النتائج بصيغة JSON
-    } catch (error) {
-        res.status(500).json({ error: "Could not fetch data: " + error.message });
+        const { category, university, id } = req.query;
+
+        // هذا السطر سيوضح لكِ في التيرمينال ماذا وصل للسيرفر فعلياً
+        console.log("طلب بحث جديد:", { category, university, id });
+
+        const cert = await Certificate.findOne({ 
+            category: category, 
+            universityName: university, 
+            studentId: id 
+        });
+
+        if (cert) {
+            res.json(cert);
+        } else {
+            res.status(404).send("لم يتم العثور على الشهادة");
+        }
+    } catch (e) {
+        res.status(500).send(e.message);
     }
 });
-
 // هذا الرابط مبدئي، سنغيره لاحقاً عند إنشاء قاعدة البيانات
 const MONGO_URI = "mongodb+srv://lynshobakie_db_user:mJsY1qXfPIOlMA8K@cluster0.ybgjkan.mongodb.net/?appName=Cluster0"; 
 
