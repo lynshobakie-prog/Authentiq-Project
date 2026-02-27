@@ -3,10 +3,21 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
 
+const Certificate = require('./models/Certificate');
+
 const app = express();
 app.use(express.json());
 app.use(cors());
 
+app.post('/add-certificate', async (req, res) => {
+    try {
+        const newCert = new Certificate(req.body);
+        await newCert.save();
+        res.status(201).send("Done! Certificate saved to Cloud. ✅");
+    } catch (error) {
+        res.status(400).send("Error: " + error.message);
+    }
+});
 // هذا الرابط مبدئي، سنغيره لاحقاً عند إنشاء قاعدة البيانات
 const MONGO_URI = "mongodb+srv://lynshobakie_db_user:mJsY1qXfPIOlMA8K@cluster0.ybgjkan.mongodb.net/?appName=Cluster0"; 
 
