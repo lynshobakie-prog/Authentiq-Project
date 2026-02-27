@@ -18,6 +18,17 @@ app.post('/add-certificate', async (req, res) => {
         res.status(400).send("Error: " + error.message);
     }
 });
+
+// وظيفة لجلب وعرض جميع الشهادات المخزنة في السحاب
+app.get('/all-certificates', async (req, res) => {
+    try {
+        const allCerts = await Certificate.find(); // أمر المونجو للبحث عن كل المستندات
+        res.status(200).json(allCerts); // إرسال النتائج بصيغة JSON
+    } catch (error) {
+        res.status(500).json({ error: "Could not fetch data: " + error.message });
+    }
+});
+
 // هذا الرابط مبدئي، سنغيره لاحقاً عند إنشاء قاعدة البيانات
 const MONGO_URI = "mongodb+srv://lynshobakie_db_user:mJsY1qXfPIOlMA8K@cluster0.ybgjkan.mongodb.net/?appName=Cluster0"; 
 
