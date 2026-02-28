@@ -1,62 +1,79 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Navbar from './components/Navbar';
-import { Search, ShieldCheck} from 'lucide-react';
+import { Search, ShieldCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 function App() {
+  const [certId, setCertId] = useState(''); // لتخزين الرقم الذي تكتبينه
+  const [result, setResult] = useState(null); // لتخزين بيانات الشهادة إذا وُجدت
+  const [loading, setLoading] = useState(false); // لحالة الانتظار
+
+  const handleVerify = async () => {
+    if (!certId) return alert("Please enter a Certificate ID");
+    
+    setLoading(true);
+    setResult(null);
+
+    try {
+      // هذا هو "العصب" الذي يربط بالباك إند
+      const response = await fetch(`http://localhost:5000/api/verify/${certId}`);
+      const data = await response.json();
+
+      if (response.ok) {
+        setResult({ success: true, ...data });
+      } else {
+        setResult({ success: false, message: data.message || "Certificate not found" });
+      }
+    } catch (error) {
+      setResult({ success: false, message: "Server is offline. Check your Backend!" });
+    }
+    setLoading(false);
+  };
+
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans">
       <Navbar />
       
-      {/* الجزء الرئيسي (Hero Section) */}
-      <main className="max-w-6xl mx-auto px-6 pt-20 pb-32 text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm mb-8 animate-bounce">
-          <ShieldCheck size={16} />
-          <span>Blockchain Secured Verification</span>
+      <main className="max-w-4xl mx-auto px-6 pt-20 text-center">
+        <h1 className="text-4xl font-bold mb-4">Blockchain Verification</h1>
+        <p className="text-gray-400 mb-10">Verify any certificate issued by our platform</p>
+
+        {/* مربع البحث */}
+        <div className="flex bg-[#111] border border-gray-800 rounded-xl overflow-hidden p-2 max-w-xl mx-auto">
+          <input 
+            type="text" 
+            placeholder="Enter ID (e.g. AUTH-101)" 
+            className="w-full bg-transparent p-3 outline-none"
+            value={certId}
+            onChange={(e) => setCertId(e.target.value)}
+          />
+          <button 
+            onClick={handleVerify}
+            className="bg-blue-600 px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition-all"
+          >
+            {loading ? "Searching..." : "Verify"}
+          </button>
         </div>
 
-        <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight">
-          Verify Certificates <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">
-            Instantly & Securely
-          </span>
-        </h1>
-
-        <p className="text-gray-400 text-lg mb-12 max-w-2xl mx-auto">
-          The global standard for academic and professional credential verification 
-          powered by immutable blockchain technology.
-        </p>
-
-        {/* مربع البحث الفخم */}
-        <div className="relative max-w-2xl mx-auto group">
-          <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
-          <div className="relative flex items-center bg-[#111] border border-gray-800 rounded-xl overflow-hidden p-2">
-            <Search className="ml-4 text-gray-500" size={24} />
-            <input 
-              type="text" 
-              placeholder="Enter Certificate ID (e.g., AUTH-2026-XXXX)" 
-              className="w-full bg-transparent border-none focus:ring-0 px-4 py-3 text-lg outline-none"
-            />
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition-all shadow-lg shadow-blue-900/20">
-              Verify
-            </button>
+        {/* عرض النتائج */}
+        {result && (
+          <div className={`mt-10 p-6 rounded-2xl border ${result.success ? 'border-green-500/30 bg-green-500/5' : 'border-red-500/30 bg-red-500/5'}`}>
+            {result.success ? (
+              <div className="text-left">
+                <div className="flex items-center gap-2 text-green-400 font-bold mb-4">
+                  <CheckCircle2 /> Valid Certificate Found
+                </div>
+                <p className="text-sm text-gray-400">Student Name:</p>
+                <p className="text-xl font-bold mb-2">{result.studentName}</p>
+                <p className="text-sm text-gray-400">University:</p>
+                <p className="text-lg">{result.university}</p>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-red-400">
+                <AlertCircle /> {result.message}
+              </div>
+            )}
           </div>
-        </div>
-
-        {/* إحصائيات سريعة */}
-        <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 border-t border-gray-900 pt-12">
-          <div>
-            <div className="text-3xl font-bold">1M+</div>
-            <div className="text-gray-500 text-sm">Verified Documents</div>
-          </div>
-          <div>
-            <div className="text-3xl font-bold">500+</div>
-            <div className="text-gray-500 text-sm">Partner Universities</div>
-          </div>
-          <div>
-            <div className="text-3xl font-bold">0.0s</div>
-            <div className="text-gray-500 text-sm">Verification Time</div>
-          </div>
-        </div>
+        )}
       </main>
     </div>
   );

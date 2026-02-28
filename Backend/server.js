@@ -52,6 +52,21 @@ app.get('/', (req, res) => {
 });
 
 const PORT = 5000;
+
+// كود مؤقت لإضافة شهادة تجريبية
+const createTestCert = async () => {
+    const check = await Certificate.findOne({ certificateId: "AUTH-101" });
+    if (!check) {
+        await Certificate.create({
+            studentName: "Layan", 
+            university: "Authentiq University",
+            certificateId: "AUTH-101",
+            major: "Software Engineering"
+        });
+        console.log("Test certificate created! 🎓");
+    }
+};
+createTestCert();
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
