@@ -17,27 +17,27 @@ app.post('/add-certificate', async (req, res) => {
     } catch (e) { res.status(400).send(e.message); }
 });
 
-// وظيفة لجلب وعرض جميع الشهادات المخزنة في السحاب
-app.get('/verify-certificate', async (req, res) => {
+// نقطة البحث الموحدة
+app.get('/verify', async (req, res) => {
     try {
-        const { category, university, id } = req.query;
+        const { type, id } = req.query; // السيرفر بيسأل: شو النوع؟ وشو الرقم؟
 
-        // هذا السطر سيوضح لكِ في التيرمينال ماذا وصل للسيرفر فعلياً
-        console.log("طلب بحث جديد:", { category, university, id });
-
-        const cert = await Certificate.findOne({ 
-            category: category, 
-            universityName: university, 
-            studentId: id 
-        });
-
-        if (cert) {
-            res.json(cert);
-        } else {
-            res.status(404).send("لم يتم العثور على الشهادة");
+        let query = {};
+        if (type === 'University') {
+            query = { category: 'University', studentId: id }; // ابحث بالرقم الجامعي
+        } else if (type === 'Course') {
+            query = { category: 'Course', certificateId: id }; // ابحث برقم الشهادة
         }
-    } catch (e) {
-        res.status(500).send(e.message);
+
+        const result = await Certificate.findOne(query);
+        
+        if (result) {
+            res.status(200).json(result);
+        } else {
+            res.status(404).json({ message: "لم يتم العثور على هذه الشهادة" });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 // هذا الرابط مبدئي، سنغيره لاحقاً عند إنشاء قاعدة البيانات
