@@ -3,12 +3,12 @@ const mongoose = require('mongoose');
 const certificateSchema = new mongoose.Schema({
     category: { 
         type: String, 
-        required: true, 
-        enum: ['University', 'Course'] 
+        required: true 
+        // حذفنا الـ enum لكي لا يرفض السيرفر أي كلمة نكتبها
     },
     studentName: { type: String, required: true },
     issueDate: { type: Date, required: true },
-    certificateId: { type: String, unique: true, required: true }, // رقم الشهادة الموحد
+    certificateId: { type: String, unique: true, required: true },
 
     // بيانات الجامعة
     universityName: { type: String },

@@ -20,13 +20,21 @@ app.post('/add-certificate', async (req, res) => {
 // نقطة البحث الموحدة
 app.get('/verify', async (req, res) => {
     try {
-        const { type, id } = req.query; // السيرفر بيسأل: شو النوع؟ وشو الرقم؟
+        const { type, id } = req.query; // استلام النوع والرقم من الرابط
 
         let query = {};
         if (type === 'University') {
-            query = { category: 'University', studentId: id }; // ابحث بالرقم الجامعي
+            // إذا كان البحث عن جامعة، نبحث في studentId أو certificateId
+            query = { 
+                category: 'University', 
+                $or: [{ certificateId: id }, { studentId: id }] 
+            };
         } else if (type === 'Course') {
-            query = { category: 'Course', certificateId: id }; // ابحث برقم الشهادة
+            // إذا كان البحث عن كورس، نبحث في certificateId فقط
+            query = { 
+                category: 'Course', 
+                certificateId: id 
+            };
         }
 
         const result = await Certificate.findOne(query);
@@ -34,7 +42,7 @@ app.get('/verify', async (req, res) => {
         if (result) {
             res.status(200).json(result);
         } else {
-            res.status(404).json({ message: "لم يتم العثور على هذه الشهادة" });
+            res.status(404).json({ message: `No ${type} certificate found with this ID` });
         }
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -53,19 +61,30 @@ app.get('/', (req, res) => {
 
 const PORT = 5000;
 
-// كود مؤقت لإضافة شهادة تجريبية
 const createTestCert = async () => {
-    const check = await Certificate.findOne({ certificateId: "AUTH-101" });
-    if (!check) {
-        await Certificate.create({
-            studentName: "Layan", 
-            university: "Authentiq University",
-            certificateId: "AUTH-101",
-            major: "Software Engineering"
-        });
-        console.log("Test certificate created! 🎓");
+    try {
+        // سنستخدم رقماً جديداً كلياً لنضمن أن قاعدة البيانات ستنشئه الآن
+        const testID = "AUTH-2026"; 
+        const check = await Certificate.findOne({ certificateId: testID });
+        
+        if (!check) {
+            await Certificate.create({
+                studentName: "Layan Shobaki", 
+                university: "Authentiq Academy",
+                certificateId: testID,
+                major: "Full Stack Development",
+                issueDate: new Date(),
+                category: "Course" // هذا يجب أن يطابق اختيارك في الـ Dropdown
+            });
+            console.log("🚀 New matching certificate created: AUTH-2026");
+        } else {
+            console.log("👌 Test certificate AUTH-2026 is ready!");
+        }
+    } catch (err) {
+        console.log("❌ Error creating cert:", err.message);
     }
 };
+
 createTestCert();
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
